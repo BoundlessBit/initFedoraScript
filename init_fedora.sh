@@ -199,8 +199,6 @@ sudo systemctl enable docker
 # Enable Docker rootless
 sudo groupadd docker
 sudo usermod -aG docker $USER
-sudo newgrp docker
-
 
 # Install VS Code
 sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc
