@@ -161,7 +161,7 @@ cd ..
 
 # Application runtimes
 sudo dnf -y install flatpak snapd nodejs
-sudo flatpak -y remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+sudo flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 sudo flatpak -y install flathub
 
 # Dev Tools
