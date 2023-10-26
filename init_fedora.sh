@@ -1,16 +1,8 @@
 #!/bin/bash
 
-# Ask for the administrator password upfront
-echo "Please enter your root password:"
-read -s PASSWORD
+echo "Hello World"
 
-# Function to execute a command with 'sudo' using the password from above
-run_as_root() {
-    echo $PASSWORD | sudo -Sv
-    echo $PASSWORD | sudo -S $@
-}
-
-user_response=''
+USER_RESPONSE=''
 
 get_user_response() {
     local prompt_message="$1"
@@ -19,21 +11,41 @@ get_user_response() {
         echo "$prompt_message (y/n)"
         read response
         case $response in
-            [Yy]* ) user_response='y'; break;;  # Yes
-            [Nn]* ) user_response='n'; break;;  # No
+            [Yy]* ) 
+                USER_RESPONSE='y'  # Set the global variable
+                return  # We use 'return' here to exit the function, ensuring it doesn't continue to loop
+                ;;
+            [Nn]* ) 
+                USER_RESPONSE='n'  # Set the global variable
+                return  # Exit the function
+                ;;
             * ) echo "Please answer 'y' for yes or 'n' for no.";;
         esac
     done
 }
 
-install_vscode_extensions=$(get_user_response "Do you wish to install VS Code Extensions?")
-install_python_extension=$(get_user_response "VS Code Extensions: Install Python extensions?")
-install_ssh_extension=$(get_user_response "VS Code Extensions: Install SSH extensions?")
-install_java_extension=$(get_user_response "VS Code Extensions: Install Java extensions?")
+# Install VS Code Extensions
+
+get_user_response "Do you wish to install VS Code?"
+install_vscode=$USER_RESPONSE
+
+if [ "$install_vscode_extensions" = "y" ]; then
+    get_user_response "VS Code Extensions: Install Python extensions?"
+    install_python_extension=$USER_RESPONSE
+
+    get_user_response "VS Code Extensions: Install SSH extensions?"
+    install_ssh_extensions=$USER_RESPONSE
+
+    get_user_response "VS Code Extensions: Install Java extensions?"
+    install_java_extensions=$USER_RESPONSE
+else
+    echo "VS Code Extensions installation will be skipped."
+fi
+
 
 # Ask the user if they want to set up Git.
-SETUP_GIT=$(get_user_response "Do you wish to set up global Git configuration? (y/n)")
-if [[ $SETUP_GIT = "y" ]]; then
+get_user_response "Do you wish to set up global Git configuration?"
+if [[ $USER_RESPONSE = "y" ]]; then
     # If the user wants to set up Git, ask for their credentials.
     echo "Please enter your Git user name:"
     read GIT_USER_NAME
@@ -42,16 +54,15 @@ if [[ $SETUP_GIT = "y" ]]; then
 
     # Check if the user has entered both a name and an email.
     if [[ -n $GIT_USER_NAME && -n $GIT_EMAIL ]]; then
-        # Set the global Git name and email.
         git config --global user.name "$GIT_USER_NAME"
-        git config --global user.email "$GIT_EMAIL"
+        git config --global user.email $GIT_EMAIL
         echo "Git global configuration updated."
     else
         echo "Git global configuration not updated. Please ensure to provide both name and email."
     fi
 
-    SETUP_BRANCH=$(get_user_response "Do you want to setup 'main' as the default branch?")
-    if [[ $SETUP_BRANCH = "y" ]]; then
+    get_user_response "Do you want to setup 'main' as the default branch?"
+    if [[ $USER_RESPONSE = "y" ]]; then
         git config --global init.defaultBranch main
     else
         echo "Skipped setup of default branch"
@@ -63,25 +74,12 @@ fi
 
 
 
-
 # Ask if the user wants to generate an SSH key.
-GENERATE_SSH_KEY=$(get_user_response "Do you want to generate a new SSH key for Git? (y/n)")
-if [[ $GENERATE_SSH_KEY = "y" ]]; then
+get_user_response "Do you want to generate a new SSH key for Git?"
+if [[ $USER_RESPONSE = "y" ]]; then
+    echo "Please enter a email for the SSH key:"
+    read SSH_EMAIL
 
-    if [[ $SETUP_GIT = "y" ]]; then
-        USE_GIT_FOR_SSH=$(get_user_response "Do you want to use your GIT email for the SSH Key? (y/n)")
-        if [[ $USE_GIT_FOR_SSH = "y" ]]; then
-            SSH_EMAIL="$GIT_EMAIL"  # Default to using the Git email.
-        else
-            echo "Please enter a email/name for the SSH key:"
-            read SSH_EMAIL
-        fi
-    else
-        echo "Please enter a email for the SSH key:"
-        read SSH_EMAIL
-    fi
-
-    # Ask for a name for the SSH key.
     echo "Please enter a name for storing the SSH key:"
     read SSH_KEY_NAME
 
@@ -92,7 +90,7 @@ if [[ $GENERATE_SSH_KEY = "y" ]]; then
     eval "$(ssh-agent -s)"
     ssh-add ~/.ssh/"$SSH_KEY_NAME"
 
-    run_as_root dnf install xclip
+    sudo dnf install xclip
 
     # Display the public key.
     echo "Here is your public SSH key:"
@@ -123,11 +121,11 @@ fi
 
 
 # Ask the user if the system will be used for remote sessions.
-REMOTE_USAGE=$(get_user_response "Will this computer be used for remote sessions? This will enable Xorg by default since it works better with remote sessions (y/n)")
+get_user_response "Will this computer be used for remote sessions? This will enable Xorg by default since it works better with remote sessions"
 
-if [[ $REMOTE_USAGE = "y" ]]; then
+if [[ $USER_RESPONSE = "y" ]]; then
     # Set GNOME to use Xorg for the next sessions.
-    run_as_root tee /etc/gdm/custom.conf <<EOL
+    sudo tee /etc/gdm/custom.conf <<EOL
 # GDM configuration storage
 [daemon]
 # Uncomment the line below to force the login screen to use Xorg
@@ -144,30 +142,30 @@ fi
 
 
 # Update and upgrade the system
-run_as_root dnf update -y
-run_as_root dnf upgrade -y
+sudo dnf update -y
+sudo dnf upgrade -y
 
 
 # Install important packages
 
-run_as_root dnf install -y gnome-tweaks
+sudo dnf install -y gnome-tweaks
 
-run_as_root dnf -y install flatpak
-run_as_root flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+sudo dnf -y install flatpak
+sudo flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 
-run_as_root dnf -y install https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm
-run_as_root dnf -y install https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
-run_as_root dnf -y install ffmpeg
-run_as_root dnf -y install ffmpeg-devel
+sudo dnf -y install https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm
+sudo dnf -y install https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
+sudo dnf -y install ffmpeg
+sudo dnf -y install ffmpeg-devel
 
-run_as_root dnf install @development-tools
+sudo dnf install @development-tools
 
 
 
 
 
 # Install Docker
-run_as_root dnf -y remove docker \
+sudo dnf -y remove docker \
                     docker-client \
                     docker-client-latest \
                     docker-common \
@@ -177,19 +175,19 @@ run_as_root dnf -y remove docker \
                     docker-selinux \
                     docker-engine-selinux \
                     docker-engine
-run_as_root dnf -y install dnf-plugins-core
-run_as_root dnf config-manager --add-repo https://download.docker.com/linux/fedora/docker-ce.repo
-run_as_root dnf install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+sudo dnf -y install dnf-plugins-core
+sudo dnf config-manager --add-repo https://download.docker.com/linux/fedora/docker-ce.repo
+sudo dnf install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
 # Enable Docker on Start
-run_as_root systemctl start docker
-run_as_root enable docker.service
-run_as_root enable containerd.service
+sudo systemctl start docker
+sudo enable docker.service
+sudo enable containerd.service
 
 # Enable Docker rootless
-run_as_root groupadd docker
-run_as_root usermod -aG docker $USER
-run_as_root newgrp docker
+sudo groupadd docker
+sudo usermod -aG docker $USER
+sudo newgrp docker
 
 
 
@@ -197,10 +195,10 @@ run_as_root newgrp docker
 
 
 # Install VS Code
-run_as_root rpm --import https://packages.microsoft.com/keys/microsoft.asc
-run_as_root sh -c 'echo -e "[code]\nname=Visual Studio Code\nbaseurl=https://packages.microsoft.com/yumrepos/vscode\nenabled=1\ngpgcheck=1\ngpgkey=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/vscode.repo'
-run_as_root dnf check-update
-run_as_root dnf install -y code
+sudo rpm --import https://packages.microsoft.com/keys/microsoft.asc
+sudo sh -c 'echo -e "[code]\nname=Visual Studio Code\nbaseurl=https://packages.microsoft.com/yumrepos/vscode\nenabled=1\ngpgcheck=1\ngpgkey=https://packages.microsoft.com/keys/microsoft.asc" > /etc/yum.repos.d/vscode.repo'
+sudo dnf check-update
+sudo dnf install -y code
 
 declare -a PYTHON_EXTENSIONS=(
     "ms-python.python"
@@ -216,31 +214,31 @@ declare -a JAVA_EXTENSIONS=(
     "vscjava.vscode-java-pack"
 )
 
-if [ "$install_vscode_extensions" = "y" ]; then
+if [ "$install_vscode" = "y" ]; then
     echo "User chose to install VS Code extensions. Proceeding..."
 
-    if [ "$install_python_extension" = "y" ]; then
+    if [ "$install_python_extensions" = "y" ]; then
         echo "Installing Python extensions..."
         for extension in "${PYTHON_EXTENSIONS[@]}"; do
             code --install-extension $extension
         done
     fi
 
-    if [ "$install_python_extension" = "y" ]; then
+    if [ "$install_ssh_extensions" = "y" ]; then
         echo "Installing Python extensions..."
         for extension in "${SSH_EXTENSIONS[@]}"; do
             code --install-extension $extension
         done
     fi
 
-    if [ "$install_python_extension" = "y" ]; then
+    if [ "$install_docker_extensions" = "y" ]; then
         echo "Installing Python extensions..."
         for extension in "${DOCKER_EXTENSIONS[@]}"; do
             code --install-extension $extension
         done
     fi
     
-    if [ "$install_python_extension" = "y" ]; then
+    if [ "$install_java_extensions" = "y" ]; then
         echo "Installing Python extensions..."
         for extension in "${JAVA_EXTENSIONS[@]}"; do
             code --install-extension $extension
@@ -258,7 +256,7 @@ fi
 grep -q "^#metadata_expire" /etc/dnf/dnf.conf && echo $PASSWORD | sudo -S sed -i 's/^#metadata_expire.*/metadata_expire=7d/' /etc/dnf/dnf.conf || \
 grep -q "^metadata_expire" /etc/dnf/dnf.conf && echo $PASSWORD | sudo -S sed -i 's/^metadata_expire.*/metadata_expire=7d/' /etc/dnf/dnf.conf || \
 echo "metadata_expire=7d" | sudo tee -a /etc/dnf/dnf.conf
-run_as_root dnf clean all
+sudo dnf clean all
 
 
 
