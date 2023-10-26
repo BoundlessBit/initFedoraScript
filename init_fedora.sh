@@ -257,8 +257,6 @@ else
 fi
 
 
-
-
 # Set DNF metadata expiry to 7 days for quick package installation
 grep -q "^#metadata_expire" /etc/dnf/dnf.conf && echo $PASSWORD | sudo -S sed -i 's/^#metadata_expire.*/metadata_expire=7d/' /etc/dnf/dnf.conf || \
 grep -q "^metadata_expire" /etc/dnf/dnf.conf && echo $PASSWORD | sudo -S sed -i 's/^metadata_expire.*/metadata_expire=7d/' /etc/dnf/dnf.conf || \
@@ -269,6 +267,6 @@ sudo dnf clean all
 # Enable minimize and maximize buttons on window title bars in GNOME.
 gsettings set org.gnome.desktop.wm.preferences button-layout 'appmenu:minimize,maximize,close'
 
-rm -R ~/initFedora
+sudo rm -R ~/initFedora
 echo "Initialization completed."
-read -n 1 -s -r -p "Press any key to close the terminal..."
+read -n 1 -s -r -p "Press any key to exit the script."
