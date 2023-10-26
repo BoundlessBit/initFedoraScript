@@ -144,10 +144,10 @@ sudo dnf update -y
 
 # Install important packages
 
-sudo dnf -y install https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm
-sudo dnf -y install https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
-sudo dnf -y install ffmpeg
-sudo dnf -y install ffmpeg-devel
+sudo dnf -y install https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm --allowerasing
+sudo dnf -y install https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm --allowerasing
+sudo dnf -y install ffmpeg --allowerasing
+sudo dnf -y install ffmpeg-devel --allowerasing
 
 # UI tweaks
 sudo dnf -y install gnome-tweaks
