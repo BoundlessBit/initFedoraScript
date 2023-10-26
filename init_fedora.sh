@@ -152,7 +152,7 @@ sudo dnf -y install ffmpeg-devel --allowerasing
 # UI tweaks
 sudo dnf -y install gnome-tweaks
 
-sudo dnf install nautilus-python python3-gobject
+sudo dnf -y install nautilus-python python3-gobject
 git clone https://github.com/chr314/nautilus-copy-path.git
 cd nautilus-copy-path
 make install
