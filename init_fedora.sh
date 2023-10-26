@@ -194,14 +194,12 @@ sudo dnf install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin d
 
 # Enable Docker on Start
 sudo systemctl start docker
-sudo systemctl enable docker.service
-sudo systemctl containerd.service
+sudo systemctl enable docker
 
 # Enable Docker rootless
 sudo groupadd docker
 sudo usermod -aG docker $USER
 sudo newgrp docker
-
 
 
 # Install VS Code
