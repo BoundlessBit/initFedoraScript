@@ -90,13 +90,12 @@ if [[ $USER_RESPONSE = "y" ]]; then
     eval "$(ssh-agent -s)"
     ssh-add ~/.ssh/"$SSH_KEY_NAME"
 
-    sudo dnf install xclip
-
     # Display the public key.
-    echo "Here is your public SSH key:"
+    echo "Here is your public SSH key, which is saved under ~/.ssh/"
     cat ~/.ssh/"$SSH_KEY_NAME".pub
 
-    # Attempt to copy the public key to the clipboard.
+    echo "Xclip will be downloaded to paste your public SSH key to the clipboard"
+    sudo dnf install xclip
     if xclip -sel clip < ~/.ssh/"$SSH_KEY_NAME".pub; then
         echo "Your public SSH key has been copied to the clipboard."
     else
@@ -119,9 +118,8 @@ fi
 
 
 
-
 # Ask the user if the system will be used for remote sessions.
-get_user_response "Will this computer be used for remote sessions? This will enable Xorg by default since it works better with remote sessions"
+get_user_response "Will this computer be used for remote sessions? This will enable Xorg by default because it works better with remote sessions"
 
 if [[ $USER_RESPONSE = "y" ]]; then
     # Set GNOME to use Xorg for the next sessions.
@@ -138,29 +136,35 @@ fi
 
 
 
-
-
-
-# Update and upgrade the system
+# Update the system
 sudo dnf update -y
-sudo dnf upgrade -y
 
 
 # Install important packages
-
-sudo dnf install -y gnome-tweaks
-
-sudo dnf -y install flatpak
-sudo flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 
 sudo dnf -y install https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release-$(rpm -E %fedora).noarch.rpm
 sudo dnf -y install https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release-$(rpm -E %fedora).noarch.rpm
 sudo dnf -y install ffmpeg
 sudo dnf -y install ffmpeg-devel
 
-sudo dnf install @development-tools
+# UI tweaks
+sudo dnf -y install gnome-tweaks
 
+# Application runtimes
+sudo dnf -y install flatpak snapd nodejs
+sudo flatpak -y remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+sudo flatpak -y install flathub
 
+# Dev Tools
+sudo dnf -y install @development-tools htop 
+sudo flatpak -y install com.getpostman.Postman
+
+# Network Tools
+sudo dnf -y install ufw curl wget 
+
+# Multimedia 
+sudo dnf -y remove firefox
+sudo flatpak -y install org.videolan.VLC org.gimp.GIMP org.chromium.Chromium org.mozilla.firefox
 
 
 
@@ -181,16 +185,13 @@ sudo dnf install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin d
 
 # Enable Docker on Start
 sudo systemctl start docker
-sudo enable docker.service
-sudo enable containerd.service
+sudo systemctl enable docker.service
+sudo systemctl containerd.service
 
 # Enable Docker rootless
 sudo groupadd docker
 sudo usermod -aG docker $USER
 sudo newgrp docker
-
-
-
 
 
 
@@ -251,7 +252,6 @@ fi
 
 
 
-
 # Set DNF metadata expiry to 7 days for quick package installation
 grep -q "^#metadata_expire" /etc/dnf/dnf.conf && echo $PASSWORD | sudo -S sed -i 's/^#metadata_expire.*/metadata_expire=7d/' /etc/dnf/dnf.conf || \
 grep -q "^metadata_expire" /etc/dnf/dnf.conf && echo $PASSWORD | sudo -S sed -i 's/^metadata_expire.*/metadata_expire=7d/' /etc/dnf/dnf.conf || \
@@ -259,18 +259,9 @@ echo "metadata_expire=7d" | sudo tee -a /etc/dnf/dnf.conf
 sudo dnf clean all
 
 
-
-
 # Enable minimize and maximize buttons on window title bars in GNOME.
 gsettings set org.gnome.desktop.wm.preferences button-layout 'appmenu:minimize,maximize,close'
 
 
-
-
-# Clear the password variable at the end of the script
-unset PASSWORD
-
-
-
-
 echo "Initialization completed."
+read -n 1 -s -r -p "Press any key to close the terminal..."
