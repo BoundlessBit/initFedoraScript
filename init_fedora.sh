@@ -1,6 +1,8 @@
 #!/bin/bash
 
 echo "Hello World"
+mkdir ~/initFedora
+cd ~/initFedora
 
 USER_RESPONSE=''
 
@@ -24,7 +26,7 @@ get_user_response() {
     done
 }
 
-# Install VS Code Extensions
+# Install VS Code & Extensions
 
 get_user_response "Do you wish to install VS Code?"
 install_vscode=$USER_RESPONSE
@@ -150,6 +152,13 @@ sudo dnf -y install ffmpeg-devel
 # UI tweaks
 sudo dnf -y install gnome-tweaks
 
+sudo dnf install nautilus-python python3-gobject
+git clone https://github.com/chr314/nautilus-copy-path.git
+cd nautilus-copy-path
+make install
+nautilus -q
+cd ..
+
 # Application runtimes
 sudo dnf -y install flatpak snapd nodejs
 sudo flatpak -y remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
@@ -164,7 +173,7 @@ sudo dnf -y install ufw curl wget
 
 # Multimedia 
 sudo dnf -y remove firefox
-sudo flatpak -y install org.videolan.VLC org.gimp.GIMP org.chromium.Chromium org.mozilla.firefox
+sudo flatpak -y install org.videolan.VLC org.gimp.GIMP org.chromium.Chromium org.mozilla.firefox org.mozilla.Thunderbird
 
 
 
@@ -262,6 +271,6 @@ sudo dnf clean all
 # Enable minimize and maximize buttons on window title bars in GNOME.
 gsettings set org.gnome.desktop.wm.preferences button-layout 'appmenu:minimize,maximize,close'
 
-
+rm -R ~/initFedora
 echo "Initialization completed."
 read -n 1 -s -r -p "Press any key to close the terminal..."
