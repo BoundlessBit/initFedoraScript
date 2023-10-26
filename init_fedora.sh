@@ -10,21 +10,20 @@ run_as_root() {
     echo $PASSWORD | sudo -S $@
 }
 
+user_response=''
+
 get_user_response() {
     local prompt_message="$1"
-    local user_response
 
     while true; do
         echo "$prompt_message (y/n)"
-        read user_response
-        case $user_response in
+        read response
+        case $response in
             [Yy]* ) user_response='y'; break;;  # Yes
             [Nn]* ) user_response='n'; break;;  # No
             * ) echo "Please answer 'y' for yes or 'n' for no.";;
         esac
     done
-
-    echo $user_response  # This will return the value to the caller.
 }
 
 install_vscode_extensions=$(get_user_response "Do you wish to install VS Code Extensions?")
