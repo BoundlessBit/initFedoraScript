@@ -29,7 +29,7 @@ get_user_response() {
 get_user_response "Do you wish to install VS Code?"
 install_vscode=$USER_RESPONSE
 
-if [ "$install_vscode_extensions" = "y" ]; then
+if [ "$install_vscode" = "y" ]; then
     get_user_response "VS Code Extensions: Install Python extensions?"
     install_python_extension=$USER_RESPONSE
 
