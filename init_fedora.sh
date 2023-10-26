@@ -33,9 +33,8 @@ install_ssh_extension=$(get_user_response "VS Code Extensions: Install SSH exten
 install_java_extension=$(get_user_response "VS Code Extensions: Install Java extensions?")
 
 # Ask the user if they want to set up Git.
-echo "Do you wish to set up global Git configuration? (yes/no)"
-read SETUP_GIT
-if [[ $SETUP_GIT = "yes" ]]; then
+SETUP_GIT=$(get_user_response "Do you wish to set up global Git configuration? (y/n)")
+if [[ $SETUP_GIT = "y" ]]; then
     # If the user wants to set up Git, ask for their credentials.
     echo "Please enter your Git user name:"
     read GIT_USER_NAME
@@ -52,8 +51,7 @@ if [[ $SETUP_GIT = "yes" ]]; then
         echo "Git global configuration not updated. Please ensure to provide both name and email."
     fi
 
-    echo "Do you want to setup main as default branch? (y/n)"
-    read SETUP_BRANCH
+    SETUP_BRANCH=$(get_user_response "Do you want to setup 'main' as the default branch?")
     if [[ $SETUP_BRANCH = "y" ]]; then
         git config --global init.defaultBranch main
     else
@@ -68,28 +66,24 @@ fi
 
 
 # Ask if the user wants to generate an SSH key.
-echo "Do you want to generate a new SSH key for Git? (yes/no)"
-read GENERATE_SSH_KEY
+GENERATE_SSH_KEY=$(get_user_response "Do you want to generate a new SSH key for Git? (y/n)")
+if [[ $GENERATE_SSH_KEY = "y" ]]; then
 
-if [[ $GENERATE_SSH_KEY = "yes" ]]; then
-
-    SSH_EMAIL="$GIT_EMAIL"  # Default to using the Git email.
-
-    # If the user has set up Git, ask if they want to use the same email for the SSH key.
-    # if [[ -n $GIT_EMAIL ]]; then
-    #     echo "Do you want to use the email from Git ($GIT_EMAIL) for the SSH key? (yes/no)"
-    #     read USE_GIT_EMAIL
-    #     if [[ $USE_GIT_EMAIL != "yes" ]]; then
-    #         echo "Please enter the email you want to use for the SSH key:"
-    #         read SSH_EMAIL
-    #     fi
-    # else
-    #     echo "Please enter the email you want to use for the SSH key:"
-    #     read SSH_EMAIL
-    # fi
+    if [[ $SETUP_GIT = "y" ]]; then
+        USE_GIT_FOR_SSH=$(get_user_response "Do you want to use your GIT email for the SSH Key? (y/n)")
+        if [[ $USE_GIT_FOR_SSH = "y" ]]; then
+            SSH_EMAIL="$GIT_EMAIL"  # Default to using the Git email.
+        else
+            echo "Please enter a email/name for the SSH key:"
+            read SSH_EMAIL
+        fi
+    else
+        echo "Please enter a email for the SSH key:"
+        read SSH_EMAIL
+    fi
 
     # Ask for a name for the SSH key.
-    echo "Please enter a name for the SSH key:"
+    echo "Please enter a name for storing the SSH key:"
     read SSH_KEY_NAME
 
     # Generate the SSH key.
@@ -130,10 +124,9 @@ fi
 
 
 # Ask the user if the system will be used for remote sessions.
-echo "Will this computer be used for remote sessions? (yes/no)"
-read REMOTE_USAGE
+REMOTE_USAGE=$(get_user_response "Will this computer be used for remote sessions? This will enable Xorg by default since it works better with remote sessions (y/n)")
 
-if [[ $REMOTE_USAGE = "yes" ]]; then
+if [[ $REMOTE_USAGE = "y" ]]; then
     # Set GNOME to use Xorg for the next sessions.
     run_as_root tee /etc/gdm/custom.conf <<EOL
 # GDM configuration storage
