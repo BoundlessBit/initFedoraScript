@@ -164,6 +164,9 @@ sudo dnf -y install flatpak snapd nodejs
 sudo flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
 sudo flatpak -y install flathub
 
+# GNOME Extensions
+sudo flatpak -y install com.mattjakeman.ExtensionManager
+
 # Dev Tools
 sudo dnf -y install @development-tools htop 
 sudo flatpak -y install com.getpostman.Postman
