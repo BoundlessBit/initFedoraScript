@@ -173,7 +173,7 @@ sudo dnf -y install ufw curl wget
 
 # Multimedia 
 sudo dnf -y remove firefox
-sudo flatpak -y install org.videolan.VLC org.gimp.GIMP org.chromium.Chromium org.mozilla.firefox org.mozilla.Thunderbird
+sudo flatpak -y install org.videolan.VLC org.gimp.GIMP org.chromium.Chromium org.mozilla.firefox org.mozilla.Thunderbird com.spotify.Client
 
 
 
